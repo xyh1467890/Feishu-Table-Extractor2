@@ -1,108 +1,122 @@
-# 飞书多维表格元数据获取工具
+# 飞书多维表格元数据工具
 
-一个基于 PyQt5 的图形界面工具，用于获取飞书（Lark）多维表格的元数据信息，包括表结构、字段配置、记录内容等。
-
-## 功能特性
-
-- **多种认证方式**：支持 Token、OAuth 和 Cookie 三种认证方式
-- **完整元数据获取**：获取表名、字段名、字段类型、选项配置等完整信息
-- **记录内容导出**：可选择是否同时获取数据表记录内容
-- **多种字段类型**：支持文本、数字、单选、多选、日期、人员、公式等所有字段类型
-- **JSON 导出**：获取结果可导出为 JSON 格式文件
-- **美观界面**：基于 Element Plus 风格的现代化界面设计
+这是一个 Django + Vue 3 Web 应用，用于获取飞书多维表格的元数据。
 
 ## 项目结构
 
 ```
-table_meta_data/
-├── main.py              # 程序主入口
-├── config/              # 配置模块
-│   ├── __init__.py
-│   └── settings.py      # 配置参数
-├── ui/                  # 用户界面模块
-│   ├── __init__.py
-│   ├── styles.py        # 界面样式
-│   └── main_window.py   # 主窗口
-├── workers/             # 后台工作线程
-│   ├── __init__.py
-│   ├── oauth_worker.py  # OAuth 认证线程
-│   ├── cookie_worker.py # Cookie 获取线程
-│   └── fetch_worker.py  # 数据获取线程
-├── api/                 # API 接口模块
-│   ├── __init__.py
-│   ├── feishu_api.py    # 开放 API 接口
-│   └── feishu_cookie_api.py  # Cookie 方式接口
-└── requirements.txt     # 依赖包列表
+table_meta_data_django+vue/
+├── backend/              # Django 后端
+│   ├── apps/            # Django 应用
+│   │   └── api/        # API 应用
+│   ├── config/          # Django 项目配置
+│   ├── static/          # 静态文件
+│   ├── templates/       # 模板文件
+│   └── manage.py
+├── frontend/            # Vue 3 前端
+│   ├── public/          # 公共资源
+│   ├── src/
+│   │   ├── assets/      # 资源文件
+│   │   ├── components/  # 组件
+│   │   ├── api/        # API 调用
+│   │   └── App.vue
+│   └── package.json
+└── README.md
 ```
 
-## 安装依赖
+## 快速开始
 
+### 后端启动
+
+1. 进入后端目录：
+```bash
+cd backend
+```
+
+2. 创建虚拟环境（可选）：
+```bash
+python -m venv venv
+venv\Scripts\activate  # Windows
+# source venv/bin/activate  # Linux/Mac
+```
+
+3. 安装依赖：
 ```bash
 pip install -r requirements.txt
 ```
 
-## 依赖说明
-
-- `requests` - HTTP 请求库，用于 API 调用
-- `PyQt5` - 图形界面框架
-- `selenium` - 浏览器自动化工具（Cookie 方式自动获取时需要）
-- `webdriver-manager` - 自动管理浏览器驱动
-
-## 使用方法
-
-### 1. 运行程序
-
+4. 运行数据库迁移：
 ```bash
-python main.py
+python manage.py migrate
 ```
 
-### 2. 选择认证方式
+5. 启动开发服务器：
+```bash
+python manage.py runserver
+```
 
-#### Token 方式（推荐）
-1. 打开飞书开放平台 API 调试台
-2. 获取 User Access Token
-3. 粘贴到 Token 输入框中
+后端将在 http://localhost:8000 运行
 
-#### OAuth 方式
-1. 在飞书开放平台创建应用
-2. 配置回调地址为 `http://localhost:3000`
-3. 输入 App ID 和 App Secret
-4. 点击"浏览器一键授权"进行 OAuth 认证
+### 前端启动
 
-#### Cookie 方式（不推荐）
-- **注意**：Cookie 方式仅支持获取当前数据表，不支持批量获取
-- **方法一（自动）**：点击"启动浏览器"，在打开的浏览器中登录飞书后点击"已登录"
-- **方法二（手动）**：从浏览器开发者工具中复制 Cookie 并粘贴
+1. 进入前端目录：
+```bash
+cd frontend
+```
 
-### 3. 配置目标
+2. 安装依赖：
+```bash
+npm install
+```
 
-1. 输入飞书多维表格链接
-2. 勾选是否需要获取记录内容
-3. 点击"获取数据"按钮
+3. 启动开发服务器：
+```bash
+npm run dev
+```
 
-### 4. 导出结果
+前端将在 http://localhost:3000 运行
 
-获取成功后，可点击"导出 JSON"按钮将结果保存到本地。
+## 功能特性
 
+- 支持多种认证方式：Token、OAuth、Cookie
+- 获取飞书多维表格的元数据
+- 支持导出 JSON 格式数据
+- 响应式设计，适配各种屏幕
+- 搜索和高亮功能
 
-## 常见问题
+## API 接口
 
-**Q: 获取失败提示权限不足？**
-A: 请确保你的账号对该多维表格有访问权限，Token 或 OAuth 认证信息正确有效。
+### POST /api/fetch/
 
-**Q: Cookie 方式提示找不到表？**
-A: 请确保链接中包含 `table=tbl...` 参数，可以在浏览器中打开对应数据表后复制链接。
+获取飞书多维表格数据
 
-**Q: 字段中引用了其他表的 ID？**
-A: Token 和 OAuth 方式会自动将关联字段中的表 ID 和字段 ID 替换为对应的名称。
+**请求体：**
+```json
+{
+  "auth_type": "token",
+  "auth_data": "your_user_token",
+  "feishu_url": "https://xxx.feishu.cn/base/xxx",
+  "fetch_records": true
+}
+```
 
-## 技术栈
+**响应：**
+```json
+{
+  "success": true,
+  "data": {
+    "base_token": "xxx",
+    "tables": [...]
+  }
+}
+```
 
-- **GUI 框架**: PyQt5
-- **HTTP 请求**: requests
-- **浏览器自动化**: Selenium
-- **数据解析**: JSON, Base64, GZip
+### GET /api/health/
 
-## 许可证
+健康检查接口
 
-MIT License
+## 注意事项
+
+- 请确保后端和前端同时运行
+- 前端通过代理将 API 请求转发到后端
+- Token 方式是推荐的认证方式，功能最完整
